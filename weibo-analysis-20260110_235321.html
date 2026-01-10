@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header .date {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .summary {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .summary h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-item .number {
+            display: block;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-item .label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .topics-list {
+            display: grid;
+            gap: 30px;
+        }
+
+        .topic-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        .topic-card.excellent {
+            border: 3px solid #FFD700;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+        }
+
+        .topic-card.good {
+            border: 2px solid #4A90E2;
+            background: linear-gradient(135deg, #e6f2ff 0%, #ffffff 100%);
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .rank {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .topic-header h3 {
+            flex: 1;
+            color: #333;
+            font-size: 1.4em;
+            min-width: 200px;
+        }
+
+        .heat {
+            background: #ff4757;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .topic-info {
+            display: grid;
+            gap: 20px;
+        }
+
+        .event-timeline h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-timeline ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .event-timeline li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            border-left: 3px solid #667eea;
+            margin-left: 10px;
+        }
+
+        .event-timeline li::before {
+            content: "●";
+            position: absolute;
+            left: -9px;
+            color: #667eea;
+            font-size: 1.2em;
+            background: white;
+            padding: 0 3px;
+        }
+
+        .product-idea {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .idea-header h4 {
+            color: #333;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: white;
+        }
+
+        .score-badge.excellent {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #333;
+        }
+
+        .score-badge.good {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+        }
+
+        .idea-content h5 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+        .core-function {
+            color: #555;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .target-users {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .target-users strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .target-users p {
+            color: #555;
+            margin: 0;
+        }
+
+        .scoring-breakdown {
+            display: grid;
+            gap: 12px;
+        }
+
+        .score-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 60px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-item .label {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .score-item .bar {
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .score-item .bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 1s ease-out;
+            border-radius: 12px;
+        }
+
+        .score-item .value {
+            font-weight: bold;
+            color: #667eea;
+            text-align: right;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.9;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .topic-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .score-item {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+
+            .score-item .bar {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔥 微博热搜产品创意分析报告</h1>
+            <p class="date">生成时间: 2026-01-10 23:53:21</p>
+        </header>
+
+        <div class="summary">
+            <h2>📊 分析概览</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="number">10</span>
+                    <span class="label">分析话题数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number">10</span>
+                    <span class="label">生成创意数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number">6</span>
+                    <span class="label">优秀创意 (≥80分)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="topics-list">
+            <!-- Topic 1: 海底捞送黄金小马挂件 -->
+            <div class="topic-card excellent">
+                <div class="topic-header">
+                    <span class="rank">#1</span>
+                    <h3>海底捞回应送黄金小马挂件</h3>
+                    <span class="heat">🔥 109万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>2025年初，海底捞部分门店推出送黄金小马挂件营销活动</li>
+                            <li>活动迅速引发网络热议，话题登上微博热搜</li>
+                            <li>海底捞官方回应活动详情，吸引大量顾客参与</li>
+                            <li>与此前"小便门事件"形成对比，品牌形象有所修复</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge excellent">85分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>🎯 "幸运锦鲤" - 实体餐饮盲盒系统</h5>
+                            <p class="core-function">
+                                <strong>核心功能:</strong> 为连锁餐饮品牌打造完整的实体盲盒营销系统。顾客每次消费可随机获得精美挂件/徽章，集齐特定组合可兑换大奖。系统包括AR扫描识别、数字藏品同步、社交分享等功能。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>Z世代消费者(18-28岁)，喜欢收集和展示，追求新奇体验，活跃于社交媒体。注重用餐仪式感和打卡文化。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 92.5%"></div>
+                                    </div>
+                                    <span class="value">74/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 55%"></div>
+                                    </div>
+                                    <span class="value">11/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 2: 我不是药神原型陆勇重返印度 -->
+            <div class="topic-card excellent">
+                <div class="topic-header">
+                    <span class="rank">#2</span>
+                    <h3>我不是药神原型陆勇重返印度</h3>
+                    <span class="heat">🔥 80万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>2025年1月9日，陆勇在社交平台发布视频，宣布时隔5年重返印度</li>
+                            <li>陆勇是电影《我不是药神》原型，曾帮白血病患者代购印度仿制药</li>
+                            <li>视频获4万网友点赞，引发对医疗体制和药品可及性讨论</li>
+                            <li>陆勇计划今年停止服药，健康状态引发关注</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge excellent">82分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>🌍 "药路通" - 全球药品信息聚合平台</h5>
+                            <p class="core-function">
+                                <strong>核心功能:</strong> 为慢性病患者提供全球合法药品信息查询服务。包括各国仿制药上市情况、价格对比、正规购买渠道、医保政策解读。配备AI助手解答用药疑问，提供患者社区交流功能。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>慢性病患者及家属(30-55岁)，长期用药需求，关注药品可及性和成本。有跨境就医或购药需求的中产家庭。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 88.75%"></div>
+                                    </div>
+                                    <span class="value">71/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 55%"></div>
+                                    </div>
+                                    <span class="value">11/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 3: 比亚迪海洋双豹插混 -->
+            <div class="topic-card good">
+                <div class="topic-header">
+                    <span class="rank">#3</span>
+                    <h3>比亚迪海洋双豹插混王炸来了</h3>
+                    <span class="heat">🔥 65万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>2026年1月9日，比亚迪推出海豹05 DM-i与海豹06 DM-i 210km长续航版本</li>
+                            <li>纯电续航达210km(CLT)，为同级车型两倍，可覆盖一周通勤</li>
+                            <li>价格8.98万起，被称"王炸"组合</li>
+                            <li>标志着10万级插混进入"一周一充"时代</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge good">68分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>⚡ "续航管家" - 智能充电规划助手</h5>
+                            <p class="core-function">
+                                <strong>核心功能:</strong> 为新能源车主提供智能充电规划服务。基于用车习惯自动规划充电时间，推荐峰谷电价最优充电方案，整合公共充电桩实时数据，提供续航焦虑解决方案和电池健康管理。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>新能源车主(25-45岁)，关注充电成本和效率，有固定充电条件。注重经济性和用车体验的城市通勤族。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 62.5%"></div>
+                                    </div>
+                                    <span class="value">50/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 90%"></div>
+                                    </div>
+                                    <span class="value">18/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 4: 云南范某某被立案调查 -->
+            <div class="topic-card excellent">
+                <div class="topic-header">
+                    <span class="rank">#4</span>
+                    <h3>云南范某某被立案调查</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>亚运冠军王某实名举报云南省松茂体育训练基地主任范某某索要15万奖金</li>
+                            <li>云南省体育局调查组核实后，确认情况基本属实</li>
+                            <li>范某某被免职并立案调查</li>
+                            <li>引发对体育系统管理透明度的讨论</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge excellent">86分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>🛡️ "权益盾" - 职场权益保护平台</h5>
+                            <p class="core-function">
+                                <strong>核心功能:</strong> 为职场人士提供权益保护的全流程服务。包括违规行为匿名举报、证据链智能整理、法律AI咨询、律师匹配、舆情监测等功能。特别针对体制内、体育、教育等特殊行业设计。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>体制内员工、运动员、教师等特殊行业从业者(25-45岁)。遭遇职场不公但担心报复，需要专业法律支持和证据保护。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 87.5%"></div>
+                                    </div>
+                                    <span class="value">70/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 80%"></div>
+                                    </div>
+                                    <span class="value">16/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 5: 麦当劳汉堡尺寸像马卡龙 -->
+            <div class="topic-card excellent">
+                <div class="topic-header">
+                    <span class="rank">#5</span>
+                    <h3>麦当劳回应汉堡尺寸像马卡龙</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>网友吐槽麦当劳汉堡越来越小，直径缩至约8厘米，接近马卡龙大小</li>
+                            <li>"一边缩水一边涨价"引发广泛讨论</li>
+                            <li>麦当劳客服回应称面包大小统一，否认缩水</li>
+                            <li>消费者实测对比照片在网上疯传</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge excellent">88分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>📏 "真实尺寸" - AR商品尺寸对比工具</h5>
+                            <p class="core-function">
+                                <strong>核心功能:</strong> 消费者用手机AR扫描商品，即可显示真实尺寸对比。用户可上传历史商品照片进行AI对比，识别"缩水式涨价"。建立商品尺寸数据库，提供社区监督功能，打造透明消费平台。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>价格敏感型消费者(20-40岁)，注重性价比，频繁使用外卖和电商平台。愿意为维护消费者权益参与社区监督。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 92.5%"></div>
+                                    </div>
+                                    <span class="value">74/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 70%"></div>
+                                    </div>
+                                    <span class="value">14/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 6: 为什么干婚的中年人越来越多 -->
+            <div class="topic-card good">
+                <div class="topic-header">
+                    <span class="rank">#6</span>
+                    <h3>为什么干婚的中年人越来越多了</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>"干婚"指夫妻虽有婚姻之名，但情感干涸，省去婚礼等重要流程</li>
+                            <li>调查显示超过25%的北上广深夫妻处于"干婚"状态</li>
+                            <li>70%坦言维持婚姻表象是为了财产、孩子和形象</li>
+                            <li>成为新型婚姻模式，引发社会广泛讨论</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge good">65分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>💞 "婚姻顾问" - 现代婚姻关系管理平台</h5>
+                            <p class="core-function">
+                                <strong>核心功能:</strong> 为夫妻提供婚姻关系全周期管理。包括婚姻状况测评、沟通方式训练、法律协议模板(如财产约定)、心理咨询匹配、离婚冷静期辅导等功能。尊重不同婚姻模式选择。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>中年夫妻(35-50岁)，婚姻进入瓶颈期。面临"干婚"困境，既不想离婚也无法改善关系，需要专业指导。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 58.75%"></div>
+                                    </div>
+                                    <span class="value">47/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 90%"></div>
+                                    </div>
+                                    <span class="value">18/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 7: 房东心软减租1万5反被上了一课 -->
+            <div class="topic-card excellent">
+                <div class="topic-header">
+                    <span class="rank">#7</span>
+                    <h3>房东心软减租1万5反被上了一课</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>房东出于好心主动为租客减免1.5万元房租</li>
+                            <li>反被租客利用或产生纠纷</li>
+                            <li>引发关于租赁关系中善意与边界的讨论</li>
+                            <li>反映租赁市场中的信任危机问题</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge excellent">84分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>🏠 "租信宝" - 智能租赁信用管理平台</h5>
+                            <p class="core-function:
+                                为房东和租客提供双向信用保障系统。包括租金智能托管(分阶段释放)、履约记录上链、争议调解机制、租金弹性调整法律工具、善意行为认证等功能。用技术重建租赁信任。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>个人房东(有2-5套房产)和城市租客(25-40岁)。房东担心租金风险，租客希望获得公平对待，双方都需要信任机制。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 90%"></div>
+                                    </div>
+                                    <span class="value">72/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 60%"></div>
+                                    </div>
+                                    <span class="value">12/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 8: 白鹿看升旗哭到停不下来 -->
+            <div class="topic-card good">
+                <div class="topic-header">
+                    <span class="rank">#8</span>
+                    <h3>白鹿看升旗哭到停不下来</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>跑男团在红其拉甫国门观看升旗仪式</li>
+                            <li>演员白鹿热泪盈眶，控制不住落泪</li>
+                            <li>节目播出后相关话题阅读量破亿</li>
+                            <li>网友多认可其真情流露，讨论爱国主义情怀</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge good">63分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>🎬 "真情时刻" - 情感共鸣短视频平台</h5>
+                            <p class="core-function:
+                                专注捕捉和传播真实情感瞬间的短视频平台。AI自动识别视频中的情感高潮点，智能剪辑生成精华片段。按情感类型分类(感动、励志、治愈等)，打造正能量内容社区。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>情感敏感型用户(18-35岁)，女性为主。喜欢观看感人、治愈类内容，愿意分享情感体验，追求精神共鸣。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 56.25%"></div>
+                                    </div>
+                                    <span class="value">45/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 90%"></div>
+                                    </div>
+                                    <span class="value">18/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 9: 差评率100%的自助餐有多差 -->
+            <div class="topic-card excellent">
+                <div class="topic-header">
+                    <span class="rank">#9</span>
+                    <h3>差评率100%的自助餐有多差</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>济南5元自助餐店因"菜少还贵"差评走红</li>
+                            <li>网友玩梗"打抱不平":"5元自助有帝王蟹吗?"</li>
+                            <li>大量网友线下资助，小店成网红店</li>
+                            <li>引发对性价比消费和差评文化的思考</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge excellent">83分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>💰 "性价比侦探" - AI消费决策助手</h5>
+                            <p class="core-function:
+                                基于用户预算和需求，AI智能推荐最值得购买的商品/服务。分析全网评价数据，识别"恶意差评"和"真实反馈"。提供性价比评分系统，帮用户找到同价位最优选择。可反向识别"超值宝藏"。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>价格敏感型消费者(18-35岁)，学生、刚入职场的年轻人。追求极致性价比，愿意花时间研究评价，避免"智商税"。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 83.75%"></div>
+                                    </div>
+                                    <span class="value">67/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 80%"></div>
+                                    </div>
+                                    <span class="value">16/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic 10: 孙颖莎韩莹交手记录 -->
+            <div class="topic-card good">
+                <div class="topic-header">
+                    <span class="rank">#10</span>
+                    <h3>孙颖莎韩莹交手记录</h3>
+                    <span class="heat">🔥 20万</span>
+                </div>
+
+                <div class="topic-info">
+                    <div class="event-timeline">
+                        <h4>📅 事件脉络</h4>
+                        <ul>
+                            <li>王曼昱3-4败给42岁德国削球手韩莹</li>
+                            <li>网友关注孙颖莎与韩莹历史交手记录</li>
+                            <li>孙颖莎此前多次完胜韩莹</li>
+                            <li>讨论国乒对阵削球手的策略</li>
+                        </ul>
+                    </div>
+
+                    <div class="product-idea">
+                        <div class="idea-header">
+                            <h4>💡 产品创意</h4>
+                            <span class="score-badge good">62分</span>
+                        </div>
+
+                        <div class="idea-content">
+                            <h5>🏓 "战术大师" - 体育对战数据分析平台</h5>
+                            <p class="core-function:
+                                为体育迷提供专业选手对战数据和历史记录查询。包括交手记录、战术风格分析、胜负概率预测、技术特点对比等功能。用数据可视化呈现比赛看点。
+                            </p>
+                            <div class="target-users">
+                                <strong>👥 目标用户:</strong>
+                                <p>体育爱好者(20-45岁)，乒乓球、网球等个人项目粉丝。喜欢研究战术和选手数据，观看比赛时需要专业解读。</p>
+                            </div>
+                            <div class="scoring-breakdown">
+                                <div class="score-item">
+                                    <span class="label">有趣度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 55%"></div>
+                                    </div>
+                                    <span class="value">44/80</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="label">有用度:</span>
+                                    <div class="bar">
+                                        <div class="fill" style="width: 90%"></div>
+                                    </div>
+                                    <span class="value">18/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>本报告由 AI 自动生成 | 基于微博热搜数据与网络搜索分析</p>
+            <p>© 2026 Weibo Hot Search Analysis | 产品创意分析工具</p>
+        </footer>
+    </div>
+
+    <script>
+        // Animate score bars on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const bars = document.querySelectorAll('.score-item .bar .fill');
+            bars.forEach((bar, index) => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100 * index);
+            });
+
+            // Add staggered animation to topic cards
+            const cards = document.querySelectorAll('.topic-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>

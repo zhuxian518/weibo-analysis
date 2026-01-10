@@ -1,0 +1,23 @@
+# Claude Code local settings
+.claude/settings.local.json
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated reports (optional - comment out if you want to track them)
+# weibo-analysis-*.html

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__web-search-prime__webSearchPrime",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
