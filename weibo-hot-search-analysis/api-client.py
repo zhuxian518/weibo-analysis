@@ -8,28 +8,38 @@ import requests
 import json
 from typing import List, Dict, Optional
 from datetime import datetime
+from urllib.parse import urlsplit, parse_qsl
+
+from config import WEIBO_HOT_API, get_tianapi_key
 
 
 class WeiboHotSearchClient:
     """微博热搜 API 客户端"""
 
-    # 常用的微博热搜 API 端点
+    # Never put credentials in endpoint URLs or commit them to source control.
     ENDPOINTS = {
-        "tianapi": "https://apis.tianapi.com/weibohot/index?key=c533afd4ff38005496594b80eb6bd27c",
+        "tianapi": WEIBO_HOT_API["endpoint"],
         "weibo_cn": "https://weibo.com/ajax/side/hotSearch",
         "rank_whatever": "https://api.rank-whatever.com/v1/weibo/hot",
-        # 用户可以添加自定义端点
     }
 
-    def __init__(self, endpoint: str = "tianapi", timeout: int = 10):
-        """
-        初始化客户端
-
-        Args:
-            endpoint: API 端点名称或 URL
-            timeout: 请求超时时间（秒）
-        """
+    def __init__(self, endpoint: str = "tianapi", timeout: int = 10,
+                 api_key: Optional[str] = None):
+        """Use TIANAPI_KEY for TianAPI; other HTTPS endpoints need no shared key."""
         self.endpoint = self.ENDPOINTS.get(endpoint, endpoint)
+        try:
+            parts = urlsplit(self.endpoint)
+            secret_fields = {"key", "token", "api_key", "apikey", "access_token",
+                             "authorization", "password", "secret"}
+            if (parts.scheme != "https" or not parts.hostname or parts.username
+                    or parts.password or parts.fragment
+                    or any(key.lower() in secret_fields for key, _ in parse_qsl(parts.query, keep_blank_values=True))):
+                raise ValueError
+        except (ValueError, TypeError):
+            raise ValueError("端点须为HTTPS且不能包含登录信息或密钥参数。") from None
+        self._params = {}
+        if self.endpoint == self.ENDPOINTS["tianapi"]:
+            self._params["key"] = get_tianapi_key(api_key)
         self.timeout = timeout
         self.session = requests.Session()
         # 设置常用的请求头
@@ -51,9 +61,18 @@ class WeiboHotSearchClient:
             - url: 链接
         """
         try:
-            response = self.session.get(self.endpoint, timeout=self.timeout)
+            response = self.session.get(self.endpoint, params=self._params,
+                                        timeout=self.timeout, allow_redirects=False)
+            if 300 <= response.status_code < 400:
+                print("❌ API 返回重定向，已停止，避免将凭据转发至其他地址。")
+                return []
             response.raise_for_status()
             data = response.json()
+
+            if (self.endpoint == self.ENDPOINTS["tianapi"] and isinstance(data, dict)
+                    and "code" in data and data["code"] not in (200, "200")):
+                print("❌ API 返回业务错误，请在服务控制台检查密钥、权限或额度。")
+                return []
 
             # 解析不同 API 的响应格式
             topics = self._parse_response(data)
@@ -61,13 +80,13 @@ class WeiboHotSearchClient:
             return topics
 
         except requests.exceptions.RequestException as e:
-            print(f"❌ API 请求失败: {e}")
+            print("❌ API 请求失败，请检查网络、服务权限或状态（请求URL及异常详情已隐藏）。")
             return []
         except json.JSONDecodeError as e:
-            print(f"❌ JSON 解析失败: {e}")
+            print("❌ API 返回了无法解析的JSON（响应详情已隐藏）。")
             return []
         except Exception as e:
-            print(f"❌ 未知错误: {e}")
+            print("❌ 无法处理API响应（异常详情已隐藏）。")
             return []
 
     def _parse_response(self, data: Dict) -> List[Dict[str, any]]:
@@ -139,7 +158,7 @@ class WeiboHotSearchClient:
 
         return topics
 
-    def save_to_json(self, topics: List[Dict], filename: Optional[str] = None):
+    def save_to_json(self, topics: List[Dict], filename: Optional[str] = None) -> bool:
         """
         保存热搜数据到 JSON 文件
 
@@ -155,8 +174,10 @@ class WeiboHotSearchClient:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(topics, f, ensure_ascii=False, indent=2)
             print(f"✅ 数据已保存到: {filename}")
+            return True
         except Exception as e:
-            print(f"❌ 保存文件失败: {e}")
+            print("❌ 保存文件失败，请检查目录权限和磁盘空间。")
+            return False
 
     def display_topics(self, topics: List[Dict], limit: int = 20):
         """
@@ -199,18 +220,24 @@ class WeiboHotSearchClient:
 
 def main():
     """主函数 - 用于测试"""
+    try:
+        client = WeiboHotSearchClient()
+    except ValueError as error:
+        print(f"❌ 配置错误: {error}")
+        return 2
     print("🚀 正在抓取微博热搜...\n")
-
-    client = WeiboHotSearchClient()
     topics = client.fetch_hot_search()
 
     if topics:
         client.display_topics(topics, limit=20)
-        client.save_to_json(topics)
+        if not client.save_to_json(topics):
+            return 1
         print(f"\n✅ 成功获取 {len(topics)} 条热搜话题")
+        return 0
     else:
         print("\n❌ 未能获取热搜数据，请检查 API 端点或网络连接")
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

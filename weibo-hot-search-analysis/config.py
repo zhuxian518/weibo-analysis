@@ -5,16 +5,27 @@
 集中管理 API 和其他配置
 """
 
-# API 配置
+import os
+
+# Endpoint metadata is safe to commit. Credentials are loaded only at call time.
 WEIBO_HOT_API = {
     "provider": "天行数据 (TianAPI)",
     "endpoint": "https://apis.tianapi.com/weibohot/index",
-    "api_key": "c533afd4ff38005496594b80eb6bd27c",
-    "full_url": "https://apis.tianapi.com/weibohot/index?key=c533afd4ff38005496594b80eb6bd27c",
     "method": "GET",
     "timeout": 10,
     "response_format": "json"
 }
+
+
+def get_tianapi_key(explicit_key=None):
+    """Read the caller's key without embedding it in source or error messages."""
+    value = explicit_key if explicit_key is not None else os.environ.get("TIANAPI_KEY", "")
+    value = value.strip()
+    if (not value or value.lower().startswith(("your_", "replace_"))
+            or value.startswith("<") or any(char.isspace() for char in value)):
+        raise ValueError("请设置环境变量 TIANAPI_KEY 为你自己的有效密钥，不要使用示例占位符。")
+    return value
+
 
 # 分析配置
 ANALYSIS_CONFIG = {

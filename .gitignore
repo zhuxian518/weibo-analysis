@@ -21,3 +21,12 @@ Thumbs.db
 
 # Generated reports (optional - comment out if you want to track them)
 # weibo-analysis-*.html
+
+# Local credentials: examples only may be committed
+.env
+.env.*
+!.env.example
+*.local.env
+
+# Generated API responses may contain personal data
+weibo_hot_search_*.json

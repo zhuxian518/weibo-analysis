@@ -7,12 +7,14 @@
 - [安装、使用与限制](weibo-hot-search-analysis/README.md)
 - [Skill 指令](weibo-hot-search-analysis/SKILL.md)：触发条件、背景研究、80/20 评分与报告输出。
 - [API 客户端](weibo-hot-search-analysis/api-client.py)：获取并标准化榜单。
-- [配置参考](weibo-hot-search-analysis/config.py)：分析参数；当前客户端不导入此配置。
+- [配置参考](weibo-hot-search-analysis/config.py)：端点元数据、环境变量密钥读取及供AI参考的分析参数。
 - [HTML 模板](weibo-hot-search-analysis/html-template.html)：由 AI 填充报告。
 - 仓库根目录的带时间戳 HTML 是历史示例，不是今天的榜单或实时分析。
 
 ## 使用边界
 
-运行前先阅读子目录 README 的凭据与数据说明。当前源码存在硬编码 API Key 的历史配置，本仓库不提供可共享的服务凭据或可用性保证；不要直接使用默认配置发请求。维护者需在独立代码修复中移除硬编码并处理密钥生命周期。本次文档维护不测试凭据、不改变源码或调用外部服务。
+客户端已移除硬编码密钥，默认从环境变量 `TIANAPI_KEY` 读取；缺失或占位配置会在联网前退出。不要将密钥写进源码、URL或提交记录；`.env.example`仅是示例，不自动加载。请先读[安全修复与旧密钥重置](SECURITY.md)。历史泄露值仍需在服务端重置，删除当前代码不能让旧值失效。
+
+离线回归：`python -m unittest discover -s tests -p "test_*.py"`（先安装`requests`）。10项测试封锁真实网络，不使用服务密钥。
 
 原 README/Skill 声明 MIT，但仓库未附 LICENSE 文件，授权文本尚不完整；第三方数据及报告素材不因此获得再分发授权。
