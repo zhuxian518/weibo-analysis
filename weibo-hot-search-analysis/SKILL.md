@@ -6,6 +6,8 @@ license: MIT
 
 # Weibo Hot Search Product Idea Analysis
 
+执行前阅读 [运行前提与数据边界](README.md)。URL 中 `YOUR_OWN_API_KEY` 仅为占位符，源码不自动替换它；不要直接执行默认客户端。先使用自己获授权的配置，或让用户提供有来源和采集时间的榜单数据。不能假设外部 API、搜索工具当前可用。
+
 ## Overview
 
 This skill analyzes Weibo hot search trending topics to extract product development opportunities through automated data collection, web research, AI-powered analysis, and professional HTML reporting.
@@ -14,7 +16,7 @@ This skill analyzes Weibo hot search trending topics to extract product developm
 
 When this skill is activated, follow these steps:
 
-1. **Fetch Data**: Call Weibo hot search API: `https://apis.tianapi.com/weibohot/index?key=c533afd4ff38005496594b80eb6bd27c`
+1. **Fetch Data**: Call Weibo hot search API: `https://apis.tianapi.com/weibohot/index?key=YOUR_OWN_API_KEY`
 2. **Research**: Use web search tools for background on each topic
 3. **Generate Ideas**: Create product concepts with 80/20 scoring framework (Interestingness 80% + Usefulness 20%)
 4. **Create Report**: Generate HTML using [`html-template.html`](html-template.html)
@@ -24,7 +26,7 @@ When this skill is activated, follow these steps:
 ### Phase 1: Fetch Weibo Hot Search Data
 
 ```bash
-curl "https://apis.tianapi.com/weibohot/index?key=c533afd4ff38005496594b80eb6bd27c"
+curl "https://apis.tianapi.com/weibohot/index?key=YOUR_OWN_API_KEY"
 ```
 
 Parse JSON response and extract trending topics (typically top 50). Filter out topics with zero heat values.
