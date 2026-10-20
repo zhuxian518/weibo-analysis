@@ -18,3 +18,7 @@
 离线回归：`python -m unittest discover -s tests -p "test_*.py"`（先安装`requests`）。10项测试封锁真实网络，不使用服务密钥。
 
 原 README/Skill 声明 MIT，但仓库未附 LICENSE 文件，授权文本尚不完整；第三方数据及报告素材不因此获得再分发授权。
+
+## 产品案例与本人实践
+
+[案例导航](docs/product/README.md)：AI协作整理的需求取舍、指标方案与可编辑流程图；练习待本人完成，目标及空表不代表结果。
